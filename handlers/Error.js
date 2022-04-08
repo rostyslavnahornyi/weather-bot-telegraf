@@ -1,3 +1,6 @@
+import User from "../models/User.js";
+import localization from "../utils/localization.js";
+
 export default async (ctx) => {
     try {
         const user = await User.findOne({ chatId: ctx.chat.id });

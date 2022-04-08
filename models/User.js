@@ -1,40 +1,33 @@
 import mongoose from "mongoose";
+import { defaultCronRule, languages } from "../utils/consts.js";
 
 const UserSchema = mongoose.Schema({
     chatId: {
         type: Number,
         required: true,
     },
-    username: {
-        type: String,
-    },
-    first_name: {
-        type: String,
-    },
+    username: String,
+    first_name: String,
     location: {
         name: String,
         coordinates: {
-            lat: {
-                type: Number,
-            },
-            lon: {
-                type: Number,
-            },
+            lat: Number,
+            lon: Number,
         },
     },
     lang: {
         type: String,
-        default: "ua",
+        default: languages.UA,
     },
     notifications: {
         rule: {
             type: String,
-            default: "0 6 * * *",
+            default: defaultCronRule,
         },
         status: {
             type: Boolean,
             default: true,
-        }
+        },
     },
 });
 

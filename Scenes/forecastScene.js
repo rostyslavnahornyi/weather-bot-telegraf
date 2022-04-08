@@ -1,10 +1,11 @@
 import { Markup, Scenes } from "telegraf";
-import localization from "../utils/localization.js";
 import User from "../models/User.js";
 import { fetchData } from "../utils/dataFetching.js";
+import localization from "../utils/localization.js";
+import { scenes } from "../utils/consts.js";
 
-const forecastScene = (ctx) => {
-    const forecast = new Scenes.BaseScene("forecast");
+const forecastScene = () => {
+    const forecast = new Scenes.BaseScene(scenes.FORECAST);
 
     forecast.enter(async (ctx) => {
         const user = await User.findOne({ chatId: ctx.chat.id });
@@ -16,40 +17,52 @@ const forecastScene = (ctx) => {
         await ctx.reply(
             current,
             Markup.inlineKeyboard([
-                [Markup.button.callback(
-                    localization[ctx.session.lang]["forecastButtonTomorrow"],
-                    "tomorrow"
-                ),
-                Markup.button.callback(
-                    localization[ctx.session.lang]["forecastButton7Days"],
-                    "sevenDays"
-                )],
-                [Markup.button.callback(
-                    localization[ctx.session.lang]["forecastButtonMenu"],
-                    "menu"
-                )],
+                [
+                    Markup.button.callback(
+                        localization[ctx.session.lang][
+                            "forecastButtonTomorrow"
+                        ],
+                        "tomorrow"
+                    ),
+                    Markup.button.callback(
+                        localization[ctx.session.lang]["forecastButton7Days"],
+                        "sevenDays"
+                    ),
+                ],
+                [
+                    Markup.button.callback(
+                        localization[ctx.session.lang]["forecastButtonMenu"],
+                        "menu"
+                    ),
+                ],
             ])
                 .oneTime()
                 .resize()
         );
 
         forecast.action("tomorrow", async (ctx) => {
-            await ctx.reply(tomorrow);
-            await ctx.scene.enter("profile");
-            await ctx.deleteMessage(
+            const reply = ctx.reply(tomorrow);
+            const scene = ctx.scene.enter(scenes.PROFILE);
+            const del = ctx.deleteMessage(
                 ctx.update.callback_query.message.message_id
             );
+
+            Promise.all([reply, scene, del], (error) => console.log(error));
         });
         forecast.action("sevenDays", async (ctx) => {
-            await ctx.reply(week);
-            await ctx.scene.enter("profile");
-            await ctx.deleteMessage(
+            const reply = ctx.reply(week);
+            const scene = ctx.scene.enter(scenes.PROFILE);
+            const del = ctx.deleteMessage(
                 ctx.update.callback_query.message.message_id
             );
+
+            Promise.all([reply, scene, del], (error) => console.log(error));
         });
     });
 
-    forecast.action("menu", async (ctx) => await ctx.scene.enter("profile"));
+    forecast.action("menu", async (ctx) => {
+        await ctx.scene.enter(scenes.PROFILE).catch((error) => console.log(error));
+    });
 
     return forecast;
 };

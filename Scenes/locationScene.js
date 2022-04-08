@@ -2,90 +2,108 @@ import { Markup, Scenes } from "telegraf";
 import { directGeocode } from "../utils/geocoder.js";
 import localization from "../utils/localization.js";
 import User from "../models/User.js";
-import fs from 'fs';
+import fs from "fs";
+import { scenes } from "../utils/consts.js";
 
-const locationScene = (ctx) => {
-    const location = new Scenes.BaseScene("location");
+const locationScene = () => {
+    const location = new Scenes.BaseScene(scenes.LOCATION);
 
     location.enter(async (ctx) => {
-        const user = await User.findOne({ chatId: ctx.chat.id });
-        ctx.session.lang = user.lang;
+        try {
+            const user = await User.findOne({ chatId: ctx.chat.id });
+            ctx.session.lang = user.lang;
 
-        await ctx.reply(localization[ctx.session.lang]["locationWrite"]);
+            await ctx.reply(localization[ctx.session.lang]["locationWrite"]);
+        } catch (error) {
+            console.log(error);
+        }
     });
 
     location.on("message", async (ctx) => {
-        const user = await User.findOne({ chatId: ctx.chat.id });
-        ctx.session.lang = user.lang;
+        try {
+            const user = await User.findOne({ chatId: ctx.chat.id });
+            ctx.session.lang = user.lang;
 
-        const buttons = [];
-        const buttonActionIndexes = [];
-        const locations = await directGeocode(ctx.message.text);
-        let ruFlag = false;
-        console.log(locations.length)
+            const buttons = [];
+            const buttonActionIndexes = [];
+            const locations = await directGeocode(ctx.message.text);
+            let ruFlag = false;
 
-        locations.forEach(async (location, index) => {
-            const { country } = location;
+            locations.forEach((location, index) => {
+                const { country } = location;
 
-            if (country === "UA") {
-                buttons.push(
-                    new Array(
-                        Markup.button.callback(
-                            location.state
-                                ? `${location.name}, ${location.state}`
-                                : `${location.name}`,
-                            index.toString()
+                if (country === "UA") {
+                    buttons.push(
+                        new Array(
+                            Markup.button.callback(
+                                location.state
+                                    ? `${location.name}, ${location.state}`
+                                    : `${location.name}`,
+                                index.toString()
+                            )
                         )
-                    )
-                );
-                buttonActionIndexes.push(index);
-            } else if (country === "RU") ruFlag = true;
-        });
-
-        if (ruFlag) {
-            await ctx.replyWithMediaGroup([
-                
-                {
-                    media: { source: fs.createReadStream(fs.realpathSync('.') + "/assets/ruError.jpg") },
-                    caption: localization[ctx.session.lang]["locationErrorRU"],
-                    type: "photo",
-                },
-            ]);
-        }
-        if (buttons.length) {
-            await ctx.reply(
-                localization[ctx.session.lang]["locationChoose"],
-                Markup.inlineKeyboard(buttons)
-            );
-
-            buttonActionIndexes.forEach((index) => {
-                location.action(index.toString(), async (ctx) => {
-                    const { name, lat, lon } = locations[index];
-                    await User.findOneAndUpdate(
-                        { chatId: ctx.chat.id },
-                        {
-                            location: {
-                                name,
-                                coordinates: {
-                                    lat,
-                                    lon,
-                                },
-                            },
-                        }
                     );
-                    await ctx.reply(
-                        localization[ctx.session.lang][
-                            "locationCongratulations"
-                        ]
-                    );
-
-                    await ctx.scene.enter("forecast");
-                });
+                    buttonActionIndexes.push(index);
+                } else if (country === "RU") ruFlag = true;
             });
-        } else {
-            await ctx.reply(localization[ctx.session.lang]["locationNotFound"]);
 
-            await ctx.scene.enter("location");
+            if (ruFlag) {
+                await ctx.replyWithMediaGroup([
+                    {
+                        media: {
+                            source: fs.createReadStream(
+                                fs.realpathSync(".") + "/assets/ruError.jpg"
+                            ),
+                        },
+                        caption:
+                            localization[ctx.session.lang]["locationErrorRU"],
+                        type: "photo",
+                    },
+                ]);
+            }
+            if (buttons.length) {
+                await ctx.reply(
+                    localization[ctx.session.lang]["locationChoose"],
+                    Markup.inlineKeyboard(buttons)
+                );
+
+                buttonActionIndexes.forEach((index) => {
+                    location.action(index.toString(), async (ctx) => {
+                        try {
+                            const { name, lat, lon } = locations[index];
+                            await User.findOneAndUpdate(
+                                { chatId: ctx.chat.id },
+                                {
+                                    location: {
+                                        name,
+                                        coordinates: {
+                                            lat,
+                                            lon,
+                                        },
+                                    },
+                                }
+                            );
+                            await ctx.reply(
+                                localization[ctx.session.lang][
+                                    "locationCongratulations"
+                                ]
+                            );
+
+                            await ctx.scene.enter(scenes.FORECAST);
+                        } catch (error) {
+                            console.log(error);
+                        }
+                    });
+                });
+            } else {
+                await ctx.reply(
+                    localization[ctx.session.lang]["locationNotFound"]
+                );
+
+                await ctx.scene.enter(scenes.LOCATION);
+            }
+        } catch (error) {
+            console.log(error);
         }
     });
 

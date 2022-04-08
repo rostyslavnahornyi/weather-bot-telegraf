@@ -9,7 +9,7 @@ import localization from "./localization.js";
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 export async function Start() {
-    const users = await User.find({});
+    const users = await User.find({}).catch((error) => console.log(error));
 
     users.forEach(({ chatId, notifications, lang, location }) => {
         if (notifications.status) {
@@ -31,7 +31,7 @@ export async function Start() {
 }
 
 export async function StopAll() {
-    const users = await User.find({});
+    const users = await User.find({}).catch((error) => console.log(error));
 
     users.forEach(({ chatId }) => {
         schedule.cancelJob(chatId.toString());
