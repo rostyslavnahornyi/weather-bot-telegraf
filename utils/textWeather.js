@@ -2,7 +2,7 @@ import { icons } from "./consts.js";
 
 const weather = {
     ua: (day) => `\n\nПогода на ${
-        new Date(day.dt * 1000).getDay() < 10
+        new Date(day.dt * 1000).getDate() < 10
             ? "0" + new Date(day.dt * 1000).getDate()
             : new Date(day.dt * 1000).getDate()
     }.${
@@ -21,7 +21,7 @@ const weather = {
     }`,
 
     ru: (day) => `\n\nПогода на ${
-        new Date(day.dt * 1000).getDay() < 10
+        new Date(day.dt * 1000).getDate() < 10
             ? "0" + new Date(day.dt * 1000).getDate()
             : new Date(day.dt * 1000).getDate()
     }.${
@@ -40,7 +40,7 @@ const weather = {
     }`,
 
     en: (day) => `\n\nWeather on ${
-        new Date(day.dt * 1000).getDay() < 10
+        new Date(day.dt * 1000).getDate() < 10
             ? "0" + new Date(day.dt * 1000).getDate()
             : new Date(day.dt * 1000).getDate()
     }.${

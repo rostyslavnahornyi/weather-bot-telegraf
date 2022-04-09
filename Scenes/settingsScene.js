@@ -140,7 +140,7 @@ async function ControllerNotifications(ctx) {
                         "toggle"
                     ),
                 ],
-                    [
+                [
                     Markup.button.callback(
                         localization[ctx.session.lang]["buttonBack"],
                         "back"
@@ -162,28 +162,13 @@ async function ControllerNotifications(ctx) {
                             },
                         }
                     );
-                    const weather = await fetchData(
-                        user.lang,
-                        user.location.coordinates
-                    );
 
-                    user.notifications.status
-                        ? schedule.rescheduleJob(
-                              chatId.toString(),
-                              `0 ${trigger} * * *`
-                          )
-                        : schedule.scheduleJob(
-                              chatId.toString(),
-                              user.notifications.rule,
-                              () => {
-                                  ctx.reply(
-                                      weather.current +
-                                          localization[ctx.session.lang][
-                                              "globalSheduleInfo"
-                                          ]
-                                  );
-                              }
-                          );
+                    if (user.notifications.status) {
+                        schedule.rescheduleJob(
+                            chatId.toString(),
+                            `0 ${trigger} * * *`
+                        );
+                    }
 
                     await ctx.reply(
                         localization[ctx.session.lang]["settingsSuccess"]

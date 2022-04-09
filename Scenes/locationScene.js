@@ -71,7 +71,7 @@ const locationScene = () => {
                     location.action(index.toString(), async (ctx) => {
                         try {
                             const { name, lat, lon } = locations[index];
-                            await User.findOneAndUpdate(
+                            await User.updateOne(
                                 { chatId: ctx.chat.id },
                                 {
                                     location: {
