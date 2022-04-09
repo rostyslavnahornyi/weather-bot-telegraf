@@ -89,6 +89,9 @@ const locationScene = () => {
                                 ]
                             );
 
+                            // restart notifications
+                            await Restart();
+                            
                             await ctx.scene.enter(scenes.FORECAST);
                         } catch (error) {
                             console.log(error);

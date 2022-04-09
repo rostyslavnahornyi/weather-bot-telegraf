@@ -52,3 +52,12 @@ export async function StopAll() {
         console.log(error);
     }
 }
+
+export async function Restart() {
+    try {
+        StopAll();
+        Start();
+    } catch (error) {
+        console.log(error);
+    }
+}
