@@ -164,8 +164,11 @@ async function ControllerNotifications(ctx) {
                     );
 
                     if (user.notifications.status) {
+                        const jobReference =
+                            schedule.scheduledJobs[chatId.toString()];
+                            
                         schedule.rescheduleJob(
-                            chatId.toString(),
+                            jobReference,
                             `0 ${trigger} * * *`
                         );
                     }
@@ -194,7 +197,6 @@ async function ControllerNotifications(ctx) {
                         },
                     }
                 );
-
                 const weather = await fetchData(
                     user.lang,
                     user.location.coordinates
