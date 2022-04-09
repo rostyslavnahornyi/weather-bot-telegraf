@@ -4,6 +4,7 @@ import localization from "../utils/localization.js";
 import User from "../models/User.js";
 import fs from "fs";
 import { scenes } from "../utils/consts.js";
+import { Restart } from "../utils/scheduler.js";
 
 const locationScene = () => {
     const location = new Scenes.BaseScene(scenes.LOCATION);
@@ -91,7 +92,7 @@ const locationScene = () => {
 
                             // restart notifications
                             await Restart();
-                            
+
                             await ctx.scene.enter(scenes.FORECAST);
                         } catch (error) {
                             console.log(error);
